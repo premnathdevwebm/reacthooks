@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useReducer, useRef } from "react";
 import Timer from "./components/Timer";
 import "./App.css";
 const fieldStyle = {
@@ -14,19 +14,26 @@ const buttonStyle = {
   fontSize: 20,
   cursor: "pointer",
 };
+const reducer = (state, action) => {
+  const { type, payload } = action;
+  return { ...state, [type]: payload };
+};
 function App() {
   const [isOpen, setIsOpen] = useState(true);
-  const [state, setState] = useState("");
-  const [city, setCity] = useState("");
-  const [address, setAddress] = useState("");
   const addressRef = useRef();
-
-  const handleInputChange = (setInput, event) => {
-    setInput(event.target.value);
+  const initialState = {
+    fieldState: "",
+    fieldCity: "",
+    fieldAddress: "",
   };
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { fieldState, fieldCity, fieldAddress } = state;
 
-  const cursSelector = () => {
-    setAddress(`${city}, ${state}`);
+  const fillAddress = () => {
+    dispatch({
+      type: "fieldAddress",
+      payload: `${fieldCity}, ${fieldState}`,
+    });
     addressRef.current.focus();
   };
 
@@ -47,25 +54,36 @@ function App() {
         <input
           placeholder="State"
           autoFocus
-          value={state}
+          value={fieldState}
           style={fieldStyle}
-          onChange={(e) => handleInputChange(setState, e)}
+          onChange={(e) =>
+            dispatch({
+              type: "fieldState",
+              payload: e.target.value,
+            })
+          }
         />
         <input
           placeholder="City"
-          value={city}
+          value={fieldCity}
           style={fieldStyle}
-          onChange={(e) => handleInputChange(setCity, e)}
+          onChange={(e) => dispatch({
+            type: "fieldCity",
+            payload: e.target.value,
+          })}
         />
-        <button style={buttonStyle} onClick={cursSelector}>
+        <button style={buttonStyle} onClick={fillAddress}>
           Fill Address
         </button>
         <textarea
           style={fieldStyle}
           ref={addressRef}
-          value={address}
+          value={fieldAddress}
           placeholder="Address"
-          onChange={(e) => handleInputChange(setAddress, e)}
+          onChange={(e) => dispatch({
+            type: "fieldAddress",
+            payload: e.target.value,
+          })}
         />
       </div>
     </div>
